@@ -4,91 +4,787 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dan Finn's Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --light-bg: #f5f8fa;
+            --dark-bg: #1a1a1a;
+            --light-text: #333;
+            --dark-text: #f5f5f5;
+            --light-card: #ffffff;
+            --dark-card: #2a2a2a;
+            --light-border: #dde1e7;
+            --dark-border: #444;
+            --light-shadow: rgba(0, 0, 0, 0.1);
+            --dark-shadow: rgba(0, 0, 0, 0.5);
+            --light-btn: #f0f0f0;
+            --dark-btn: #3a3a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        #calculator {
-            margin: 50px auto;
-            width: 300px;
-            border: 1px solid #ccc;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        input[type="number"] {
-            width: 100px;
-            padding: 5px;
-            margin: 5px;
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
         }
-        input[type="submit"] {
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: #fff;
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: none;
             border: none;
-            border-radius: 5px;
-        }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-        #result {
             font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.dark-mode .theme-toggle {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .subtitle {
+            color: #aaa;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+        }
+
+        #calculator {
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+            background-color: var(--light-card);
+            border: 1px solid var(--light-border);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px var(--light-shadow);
+        }
+
+        body.dark-mode #calculator {
+            background-color: var(--dark-card);
+            border-color: var(--dark-border);
+            box-shadow: 0 10px 25px var(--dark-shadow);
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .calculator-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: var(--light-card);
+            color: var(--light-text);
+        }
+
+        body.dark-mode input[type="number"] {
+            background-color: var(--dark-card);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .operation-btn {
+            padding: 12px 0;
+            cursor: pointer;
+            background-color: var(--light-btn);
+            color: var(--light-text);
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        body.dark-mode .operation-btn {
+            background-color: var(--dark-btn);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+
+        .operation-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .operation-btn:hover {
+            background-color: #444;
+        }
+
+        .operation-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .operation-btn.primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .operation-btn.danger {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .operation-btn.danger:hover {
+            background-color: #c82333;
+        }
+
+        .scientific-section {
             margin-top: 20px;
+            border-top: 1px solid var(--light-border);
+            padding-top: 20px;
+        }
+
+        body.dark-mode .scientific-section {
+            border-color: var(--dark-border);
+        }
+
+        .scientific-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        #result {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 24px;
+            font-weight: 500;
+            margin-top: 20px;
+            text-align: right;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border: 1px solid var(--light-border);
+        }
+
+        body.dark-mode #result {
+            background-color: #333;
+            border-color: var(--dark-border);
+        }
+
+        .history-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            background-color: var(--light-card);
+            border: 1px solid var(--light-border);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px var(--light-shadow);
+        }
+
+        body.dark-mode .history-section {
+            background-color: var(--dark-card);
+            border-color: var(--dark-border);
+            box-shadow: 0 10px 25px var(--dark-shadow);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-header h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .clear-history {
+            background-color: transparent;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .clear-history:hover {
+            text-decoration: underline;
+        }
+
+        #history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--light-border);
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        body.dark-mode .history-item {
+            border-color: var(--dark-border);
+        }
+
+        .history-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        body.dark-mode .history-item:hover {
+            background-color: #333;
+        }
+
+        .operation {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .memory-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--light-border);
+            padding-top: 20px;
+        }
+
+        body.dark-mode .memory-section {
+            border-color: var(--dark-border);
+        }
+
+        .memory-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .memory-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .memory-btn {
+            padding: 8px 0;
+            cursor: pointer;
+            background-color: var(--light-btn);
+            color: var(--light-text);
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        body.dark-mode .memory-btn {
+            background-color: var(--dark-btn);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+
+        .memory-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        body.dark-mode .memory-btn:hover {
+            background-color: #444;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        body.dark-mode footer {
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #calculator, .history-section {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="calculator">
-        <h1>Dan Finn's Calculator</h1>
-        <form id="calcForm">
-            <input type="number" id="num1" placeholder="Enter number">
-            <input type="number" id="num2" placeholder="Enter number">
-            <br><br>
-            <input type="submit" id="add" value="Add">
-            <input type="submit" id="subtract" value="Subtract">
-            <input type="submit" id="multiply" value="Multiply">
-            <input type="submit" id="divide" value="Divide">
-            <input type="submit" id="modulus" value="Modulus">
-        </form>
-        <div id="result"></div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">☀️</button>
+    
+    <div class="container">
+        <header>
+            <h1>Dan Finn's Advanced Calculator</h1>
+            <p class="subtitle">A powerful calculator with scientific functions and calculation history</p>
+        </header>
+
+        <div class="main-content">
+            <div id="calculator">
+                <div class="calculator-header">
+                    <h2>Calculator</h2>
+                </div>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="num1">First Number</label>
+                        <input type="number" id="num1" placeholder="Enter first number">
+                    </div>
+                    <div class="input-group">
+                        <label for="num2">Second Number</label>
+                        <input type="number" id="num2" placeholder="Enter second number">
+                    </div>
+                </div>
+                
+                <div class="buttons-grid">
+                    <button type="button" class="operation-btn primary" id="add">Add (+)</button>
+                    <button type="button" class="operation-btn primary" id="subtract">Subtract (-)</button>
+                    <button type="button" class="operation-btn primary" id="multiply">Multiply (×)</button>
+                    <button type="button" class="operation-btn primary" id="divide">Divide (÷)</button>
+                    <button type="button" class="operation-btn primary" id="modulus">Modulus (%)</button>
+                    <button type="button" class="operation-btn primary" id="power">Power (^)</button>
+                    <button type="button" class="operation-btn danger" id="clear">Clear</button>
+                </div>
+                
+                <div class="scientific-section">
+                    <h3>Scientific Functions</h3>
+                    <div class="buttons-grid">
+                        <button type="button" class="operation-btn" id="sqrt">Square Root</button>
+                        <button type="button" class="operation-btn" id="sin">Sine</button>
+                        <button type="button" class="operation-btn" id="cos">Cosine</button>
+                        <button type="button" class="operation-btn" id="tan">Tangent</button>
+                        <button type="button" class="operation-btn" id="log">Log (base 10)</button>
+                        <button type="button" class="operation-btn" id="ln">Ln (base e)</button>
+                    </div>
+                </div>
+                
+                <div id="result">Result will appear here</div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>History</h2>
+                    <button type="button" class="clear-history" id="clear-history">Clear All</button>
+                </div>
+                
+                <ul id="history-list">
+                    <!-- History items will be added here dynamically -->
+                </ul>
+                
+                <div class="memory-section">
+                    <h3>Memory Functions</h3>
+                    <div class="memory-buttons">
+                        <button type="button" class="memory-btn" id="memory-store">Store (MS)</button>
+                        <button type="button" class="memory-btn" id="memory-recall">Recall (MR)</button>
+                        <button type="button" class="memory-btn" id="memory-add">Add (M+)</button>
+                        <button type="button" class="memory-btn" id="memory-subtract">Subtract (M-)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            &copy; 2025 Dan Finn - Advanced Calculator | All rights reserved
+        </footer>
     </div>
 
     <script>
-        document.getElementById("calcForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let num1 = parseFloat(document.getElementById("num1").value);
-            let num2 = parseFloat(document.getElementById("num2").value);
-            let result;
-
-            if (isNaN(num1) || isNaN(num2)) {
-                document.getElementById("result").innerText = "Please enter valid numbers.";
-                return;
+        document.addEventListener("DOMContentLoaded", function() {
+            // Theme toggle
+            const themeToggle = document.getElementById("theme-toggle");
+            const body = document.body;
+            let memoryValue = 0;
+            let calculationHistory = [];
+            
+            // Check for saved theme preference or prefer-color-scheme
+            const savedTheme = localStorage.getItem("calculator-theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            
+            if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+                body.classList.add("dark-mode");
+                themeToggle.textContent = "🌙";
             }
-
-            switch (event.submitter.id) {
-                case "add":
-                    result = num1 + num2;
-                    break;
-                case "subtract":
-                    result = num1 - num2;
-                    break;
-                case "multiply":
-                    result = num1 * num2;
-                    break;
-                case "divide":
-                    if (num2 === 0) {
-                        result = "Cannot divide by zero!";
-                    } else {
-                        result = num1 / num2;
+            
+            themeToggle.addEventListener("click", function() {
+                body.classList.toggle("dark-mode");
+                if (body.classList.contains("dark-mode")) {
+                    localStorage.setItem("calculator-theme", "dark");
+                    themeToggle.textContent = "🌙";
+                } else {
+                    localStorage.setItem("calculator-theme", "light");
+                    themeToggle.textContent = "☀️";
+                }
+            });
+            
+            // Load history from localStorage
+            if (localStorage.getItem("calculator-history")) {
+                try {
+                    calculationHistory = JSON.parse(localStorage.getItem("calculator-history"));
+                    updateHistoryDisplay();
+                } catch (e) {
+                    console.error("Error loading history:", e);
+                    localStorage.removeItem("calculator-history");
+                }
+            }
+            
+            // Calculate function
+            function calculate(operation, requiresSecondNumber = true) {
+                const num1Input = document.getElementById("num1");
+                const num2Input = document.getElementById("num2");
+                const resultDisplay = document.getElementById("result");
+                
+                let num1 = parseFloat(num1Input.value);
+                let num2 = requiresSecondNumber ? parseFloat(num2Input.value) : null;
+                let result;
+                let operationText = "";
+                
+                // Validate inputs based on operation
+                if (isNaN(num1)) {
+                    resultDisplay.textContent = "Please enter a valid first number.";
+                    return;
+                }
+                
+                if (requiresSecondNumber && isNaN(num2)) {
+                    resultDisplay.textContent = "Please enter a valid second number.";
+                    return;
+                }
+                
+                // Perform calculation based on operation
+                switch (operation) {
+                    case "add":
+                        result = num1 + num2;
+                        operationText = `${num1} + ${num2} = ${result}`;
+                        break;
+                    case "subtract":
+                        result = num1 - num2;
+                        operationText = `${num1} - ${num2} = ${result}`;
+                        break;
+                    case "multiply":
+                        result = num1 * num2;
+                        operationText = `${num1} × ${num2} = ${result}`;
+                        break;
+                    case "divide":
+                        if (num2 === 0) {
+                            result = "Cannot divide by zero!";
+                            operationText = `${num1} ÷ ${num2} = Error`;
+                        } else {
+                            result = num1 / num2;
+                            operationText = `${num1} ÷ ${num2} = ${result}`;
+                        }
+                        break;
+                    case "modulus":
+                        if (num2 === 0) {
+                            result = "Cannot find modulus with zero!";
+                            operationText = `${num1} % ${num2} = Error`;
+                        } else {
+                            result = num1 % num2;
+                            operationText = `${num1} % ${num2} = ${result}`;
+                        }
+                        break;
+                    case "power":
+                        result = Math.pow(num1, num2);
+                        operationText = `${num1} ^ ${num2} = ${result}`;
+                        break;
+                    case "sqrt":
+                        if (num1 < 0) {
+                            result = "Cannot calculate square root of negative number!";
+                            operationText = `√${num1} = Error`;
+                        } else {
+                            result = Math.sqrt(num1);
+                            operationText = `√${num1} = ${result}`;
+                        }
+                        break;
+                    case "sin":
+                        result = Math.sin(num1 * (Math.PI / 180)); // Convert to radians
+                        operationText = `sin(${num1}°) = ${result}`;
+                        break;
+                    case "cos":
+                        result = Math.cos(num1 * (Math.PI / 180)); // Convert to radians
+                        operationText = `cos(${num1}°) = ${result}`;
+                        break;
+                    case "tan":
+                        result = Math.tan(num1 * (Math.PI / 180)); // Convert to radians
+                        operationText = `tan(${num1}°) = ${result}`;
+                        break;
+                    case "log":
+                        if (num1 <= 0) {
+                            result = "Cannot calculate log of non-positive number!";
+                            operationText = `log(${num1}) = Error`;
+                        } else {
+                            result = Math.log10(num1);
+                            operationText = `log(${num1}) = ${result}`;
+                        }
+                        break;
+                    case "ln":
+                        if (num1 <= 0) {
+                            result = "Cannot calculate ln of non-positive number!";
+                            operationText = `ln(${num1}) = Error`;
+                        } else {
+                            result = Math.log(num1);
+                            operationText = `ln(${num1}) = ${result}`;
+                        }
+                        break;
+                }
+                
+                // Display result
+                if (typeof result === "number") {
+                    // Round to 8 decimal places to avoid floating point issues
+                    result = parseFloat(result.toFixed(8));
+                    // Remove trailing zeros
+                    result = result.toString().replace(/\.0+$|(\.\d*[1-9])0+$/, '$1');
+                }
+                
+                resultDisplay.textContent = `Result: ${result}`;
+                
+                // Add to history if it's a valid calculation
+                if (operationText && !operationText.includes("Error")) {
+                    addToHistory(operationText, result);
+                }
+                
+                return result;
+            }
+            
+            // Add event listeners to all operation buttons
+            document.getElementById("add").addEventListener("click", () => calculate("add"));
+            document.getElementById("subtract").addEventListener("click", () => calculate("subtract"));
+            document.getElementById("multiply").addEventListener("click", () => calculate("multiply"));
+            document.getElementById("divide").addEventListener("click", () => calculate("divide"));
+            document.getElementById("modulus").addEventListener("click", () => calculate("modulus"));
+            document.getElementById("power").addEventListener("click", () => calculate("power"));
+            
+            document.getElementById("sqrt").addEventListener("click", () => calculate("sqrt", false));
+            document.getElementById("sin").addEventListener("click", () => calculate("sin", false));
+            document.getElementById("cos").addEventListener("click", () => calculate("cos", false));
+            document.getElementById("tan").addEventListener("click", () => calculate("tan", false));
+            document.getElementById("log").addEventListener("click", () => calculate("log", false));
+            document.getElementById("ln").addEventListener("click", () => calculate("ln", false));
+            
+            // Clear button
+            document.getElementById("clear").addEventListener("click", function() {
+                document.getElementById("num1").value = "";
+                document.getElementById("num2").value = "";
+                document.getElementById("result").textContent = "Result will appear here";
+            });
+            
+            // Clear history
+            document.getElementById("clear-history").addEventListener("click", function() {
+                calculationHistory = [];
+                localStorage.removeItem("calculator-history");
+                updateHistoryDisplay();
+            });
+            
+            // Memory functions
+            document.getElementById("memory-store").addEventListener("click", function() {
+                const resultText = document.getElementById("result").textContent;
+                if (resultText.startsWith("Result: ")) {
+                    const value = parseFloat(resultText.substring(8));
+                    if (!isNaN(value)) {
+                        memoryValue = value;
+                        alert("Value stored in memory: " + value);
                     }
-                    break;
-                case "modulus":
-                    result = num1 % num2;
-                    break;
+                }
+            });
+            
+            document.getElementById("memory-recall").addEventListener("click", function() {
+                document.getElementById("num1").value = memoryValue;
+            });
+            
+            document.getElementById("memory-add").addEventListener("click", function() {
+                const resultText = document.getElementById("result").textContent;
+                if (resultText.startsWith("Result: ")) {
+                    const value = parseFloat(resultText.substring(8));
+                    if (!isNaN(value)) {
+                        memoryValue += value;
+                        alert("Value added to memory. New memory value: " + memoryValue);
+                    }
+                }
+            });
+            
+            document.getElementById("memory-subtract").addEventListener("click", function() {
+                const resultText = document.getElementById("result").textContent;
+                if (resultText.startsWith("Result: ")) {
+                    const value = parseFloat(resultText.substring(8));
+                    if (!isNaN(value)) {
+                        memoryValue -= value;
+                        alert("Value subtracted from memory. New memory value: " + memoryValue);
+                    }
+                }
+            });
+            
+            // Add to history
+            function addToHistory(operation, result) {
+                calculationHistory.unshift({
+                    operation: operation,
+                    result: result,
+                    timestamp: new Date().toLocaleString()
+                });
+                
+                // Limit history to 10 items
+                if (calculationHistory.length > 10) {
+                    calculationHistory.pop();
+                }
+                
+                // Save to localStorage
+                localStorage.setItem("calculator-history", JSON.stringify(calculationHistory));
+                
+                // Update display
+                updateHistoryDisplay();
             }
-
-            document.getElementById("result").innerText = "Result: " + result;
+            
+            // Update history display
+            function updateHistoryDisplay() {
+                const historyList = document.getElementById("history-list");
+                historyList.innerHTML = "";
+                
+                if (calculationHistory.length === 0) {
+                    const emptyItem = document.createElement("li");
+                    emptyItem.className = "history-item";
+                    emptyItem.textContent = "No calculations yet";
+                    historyList.appendChild(emptyItem);
+                    return;
+                }
+                
+                calculationHistory.forEach(item => {
+                    const listItem = document.createElement("li");
+                    listItem.className = "history-item";
+                    
+                    const operationSpan = document.createElement("span");
+                    operationSpan.className = "operation";
+                    operationSpan.textContent = item.operation;
+                    
+                    listItem.appendChild(operationSpan);
+                    
+                    // Make history items clickable to reuse the values
+                    listItem.addEventListener("click", function() {
+                        // If the history item contains numbers and a result, extract them
+                        const matches = item.operation.match(/^([-\d.]+)\s*[\+\-\×\÷\%\^]\s*([-\d.]+)\s*=\s*([-\d.]+)$/);
+                        
+                        if (matches && matches.length >= 4) {
+                            document.getElementById("num1").value = matches[1];
+                            document.getElementById("num2").value = matches[2];
+                            document.getElementById("result").textContent = "Result: " + matches[3];
+                        } else {
+                            // For single-value operations like sqrt, sin, etc.
+                            const singleMatch = item.operation.match(/[^(]*\(([-\d.]+)[^)]*\)\s*=\s*([-\d.]+)$/);
+                            if (singleMatch && singleMatch.length >= 3) {
+                                document.getElementById("num1").value = singleMatch[1];
+                                document.getElementById("result").textContent = "Result: " + singleMatch[2];
+                            } else {
+                                // For sqrt which has a different format
+                                const sqrtMatch = item.operation.match(/√([-\d.]+)\s*=\s*([-\d.]+)$/);
+                                if (sqrtMatch && sqrtMatch.length >= 3) {
+                                    document.getElementById("num1").value = sqrtMatch[1];
+                                    document.getElementById("result").textContent = "Result: " + sqrtMatch[2];
+                                }
+                            }
+                        }
+                    });
+                    
+                    historyList.appendChild(listItem);
+                });
+            }
+            
+            // Initial history display
+            updateHistoryDisplay();
         });
     </script>
 </body>
